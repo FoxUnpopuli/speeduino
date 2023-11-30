@@ -102,6 +102,13 @@
   #define CORE_SAM
   #define INJ_CHANNELS 8
   #define IGN_CHANNELS 8
+// For the Grand Central...
+#elif defined(__SAMD51P20A__)
+  #define BOARD_H "board_grandcentral.h"
+  #define CORE_SAMD51
+  #define CORE_SAM
+  #define INJ_CHANNELS 8
+  #define IGN_CHANNELS 8
 #else
   #error Incorrect board selected. Please select the correct board (Usually Mega 2560) and upload again
 #endif
