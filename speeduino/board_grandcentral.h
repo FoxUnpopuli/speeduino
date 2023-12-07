@@ -27,47 +27,52 @@
 /*
 ***********************************************************************************************************
 * Schedules
+* SAMD51 TCs and TCCs, oh what fun.
+* Will initially try Josh's setup for registers, i.e. TCC0->COUNT.reg / TCC0->CC[0].bit.CC
+* Not sure if they'll work or not...
+* Also not sure this can't be done with the simpler TC timers.  Will try later.
+* Fuelling first:
 */
   
-  #define FUEL1_COUNTER <register here>
-  #define FUEL2_COUNTER <register here>
-  #define FUEL3_COUNTER <register here>
-  #define FUEL4_COUNTER <register here>
-  //The below are optional, but recommended if there are sufficient timers/compares
-  #define FUEL5_COUNTER <register here>
-  #define FUEL6_COUNTER <register here>
-  #define FUEL7_COUNTER <register here>
-  #define FUEL8_COUNTER <register here>
+  #define FUEL1_COUNTER TCC0->COUNT.reg
+  #define FUEL2_COUNTER TCC0->COUNT.reg
+  #define FUEL3_COUNTER TCC0->COUNT.reg
+  #define FUEL4_COUNTER TCC0->COUNT.reg
+  #define FUEL5_COUNTER TCC0->COUNT.reg
+  #define FUEL6_COUNTER TCC0->COUNT.reg
+  #define FUEL7_COUNTER TCC4->COUNT.reg
+  #define FUEL8_COUNTER TCC4->COUNT.reg
+  
+  #define FUEL1_COMPARE TCC0->CC[0].bit.CC
+  #define FUEL2_COMPARE TCC0->CC[1].bit.CC
+  #define FUEL3_COMPARE TCC0->CC[2].bit.CC
+  #define FUEL4_COMPARE TCC0->CC[3].bit.CC
+  #define FUEL5_COMPARE TCC0->CC[4].bit.CC
+  #define FUEL6_COMPARE TCC0->CC[5].bit.CC
+  #define FUEL7_COMPARE TCC4->CC[0].bit.CC
+  #define FUEL8_COMPARE TCC4->CC[1].bit.CC
 
-  #define IGN1_COUNTER  <register here>
-  #define IGN2_COUNTER  <register here>
-  #define IGN3_COUNTER  <register here>
-  #define IGN4_COUNTER  <register here>
-  //The below are optional, but recommended if there are sufficient timers/compares
-  #define IGN5_COUNTER  <register here>
-  #define IGN6_COUNTER  <register here>
-  #define IGN7_COUNTER  <register here>
-  #define IGN8_COUNTER  <register here>
+/*
+* Now Ignitions...
+*/
 
-  #define FUEL1_COMPARE <register here>
-  #define FUEL2_COMPARE <register here>
-  #define FUEL3_COMPARE <register here>
-  #define FUEL4_COMPARE <register here>
-  //The below are optional, but recommended if there are sufficient timers/compares
-  #define FUEL5_COMPARE <register here>
-  #define FUEL6_COMPARE <register here>
-  #define FUEL7_COMPARE <register here>
-  #define FUEL8_COMPARE <register here>
+  #define IGN1_COUNTER  TCC1->COUNT.reg
+  #define IGN2_COUNTER  TCC1->COUNT.reg
+  #define IGN3_COUNTER  TCC1->COUNT.reg
+  #define IGN4_COUNTER  TCC1->COUNT.reg
+  #define IGN5_COUNTER  TCC2->COUNT.reg
+  #define IGN6_COUNTER  TCC2->COUNT.reg
+  #define IGN7_COUNTER  TCC3->COUNT.reg
+  #define IGN8_COUNTER  TCC3->COUNT.reg
 
-  #define IGN1_COMPARE  <register here>
-  #define IGN2_COMPARE  <register here>
-  #define IGN3_COMPARE  <register here>
-  #define IGN4_COMPARE  <register here>
-  //The below are optional, but recommended if there are sufficient timers/compares
-  #define IGN5_COMPARE  <register here>
-  #define IGN6_COMPARE  <register here>
-  #define IGN7_COMPARE  <register here>
-  #define IGN8_COMPARE  <register here>
+  #define IGN1_COMPARE  TCC1->CC[0].bit.CC
+  #define IGN2_COMPARE  TCC1->CC[1].bit.CC
+  #define IGN3_COMPARE  TCC1->CC[2].bit.CC
+  #define IGN4_COMPARE  TCC1->CC[3].bit.CC
+  #define IGN5_COMPARE  TCC2->CC[0].bit.CC
+  #define IGN6_COMPARE  TCC2->CC[1].bit.CC
+  #define IGN7_COMPARE  TCC3->CC[0].bit.CC
+  #define IGN8_COMPARE  TCC3->CC[1].bit.CC
 
   static inline void FUEL1_TIMER_ENABLE(void)  {<macro here>;}
   static inline void FUEL2_TIMER_ENABLE(void)  {<macro here>;}
