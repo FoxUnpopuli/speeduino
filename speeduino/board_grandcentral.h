@@ -1,5 +1,8 @@
 #ifndef SAMD51_H
 #define SAMD51_H
+
+// FoxUnpop: Not sure about ^^those...
+
 #if defined(CORE_SAMD51)
 
 #include "sam.h"
@@ -17,6 +20,8 @@
   #define EEPROM_LIB_H <EEPROM.h> //The name of the file that provides the EEPROM class
   typedef int eeprom_address_t;
   #define micros_safe() micros() //timer5 method is not used on anything but AVR, the micros_safe() macro is simply an alias for the normal micros()
+  // MiF/Grand Central: Don't know what the Arduino/Adafruit routine is for doing micros(), but if it uses a TC/TCC then that might be a problem...
+  //                    ...however, tt may use the RTC in which case, 'yay!'
   void initBoard();
   uint16_t freeRam();
   void doSystemReset();
@@ -27,7 +32,7 @@
 /*
 ***********************************************************************************************************
 * Schedules
-* SAMD51 TCs and TCCs, oh what fun.
+* SAMD51/E54 TCs and TCCs, oh what fun.
 * Initially tried Josh's setup for registers, i.e. TCC0->COUNT.reg / TCC0->CC[0].bit.CC
 * Didn't finish - don't need the complexity, maybe better keep it simple?  8 TCs with 2 channels each...
 * Probably need to unset all TCs and TCCs from any pins that happen to be attached in the variant file.
@@ -44,8 +49,8 @@
   #define FUEL7_COUNTER TC5->COUNT16.COUNT.reg
   #define FUEL8_COUNTER TC5->COUNT16.COUNT.reg
   
-  #define FUEL1_COMPARE TC0->COUNT16.CC[0].reg
-  #define FUEL2_COMPARE TC0->COUNT16.CC[1].reg
+  #define FUEL1_COMPARE TC0->COUNT16.CC[0].reg  // CC0 register, when matched, sets the MC0 event...
+  #define FUEL2_COMPARE TC0->COUNT16.CC[1].reg  // CC1 register, when matched, sets the MC1 event.  Simples!(?)
   #define FUEL3_COMPARE TC1->COUNT16.CC[0].reg
   #define FUEL4_COMPARE TC1->COUNT16.CC[1].reg
   #define FUEL5_COMPARE TC4->COUNT16.CC[0].reg
@@ -53,18 +58,16 @@
   #define FUEL7_COMPARE TC5->COUNT16.CC[0].reg
   #define FUEL8_COMPARE TC5->COUNT16.CC[1].reg
 
-/*
-* Now Ignitions...
-*/
+  // Now Ignitions...
 
-  #define IGN1_COUNTER  TC2->COUNT.reg
-  #define IGN2_COUNTER  TC2->COUNT.reg
-  #define IGN3_COUNTER  TC3->COUNT.reg
-  #define IGN4_COUNTER  TC3->COUNT.reg
-  #define IGN5_COUNTER  TC6->COUNT.reg
-  #define IGN6_COUNTER  TC6->COUNT.reg
-  #define IGN7_COUNTER  TC7->COUNT.reg
-  #define IGN8_COUNTER  TC7->COUNT.reg
+  #define IGN1_COUNTER  TC2->COUNT16.COUNT.reg
+  #define IGN2_COUNTER  TC2->COUNT16.COUNT.reg
+  #define IGN3_COUNTER  TC3->COUNT16.COUNT.reg
+  #define IGN4_COUNTER  TC3->COUNT16.COUNT.reg
+  #define IGN5_COUNTER  TC6->COUNT16.COUNT.reg
+  #define IGN6_COUNTER  TC6->COUNT16.COUNT.reg
+  #define IGN7_COUNTER  TC7->COUNT16.COUNT.reg
+  #define IGN8_COUNTER  TC7->COUNT16.COUNT.reg
 
   #define IGN1_COMPARE  TC2->COUNT16.CC[0].reg
   #define IGN2_COMPARE  TC2->COUNT16.CC[1].reg
@@ -75,33 +78,38 @@
   #define IGN7_COMPARE  TC7->COUNT16.CC[0].reg
   #define IGN8_COMPARE  TC7->COUNT16.CC[1].reg
 
-  static inline void FUEL1_TIMER_ENABLE(void)  { TC0->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL2_TIMER_ENABLE(void)  { TC0->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL3_TIMER_ENABLE(void)  {<macro here>;}
-  static inline void FUEL4_TIMER_ENABLE(void)  {<macro here>;}
-  static inline void FUEL5_TIMER_ENABLE(void)  {<macro here>;}
-  static inline void FUEL6_TIMER_ENABLE(void)  {<macro here>;}  ///  All these are wrong - I want to enable the MCx, not the whole timer...
-  static inline void FUEL7_TIMER_ENABLE(void)  {<macro here>;}
-  static inline void FUEL8_TIMER_ENABLE(void)  {<macro here>;}
 
-  static inline void FUEL1_TIMER_DISABLE(void)  { TC0->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL2_TIMER_DISABLE(void)  { TC0->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL3_TIMER_DISABLE(void)  { TC1->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC1->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL4_TIMER_DISABLE(void)  { TC1->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC1->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL5_TIMER_DISABLE(void)  { TC4->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC4->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL6_TIMER_DISABLE(void)  { TC4->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC4->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL7_TIMER_DISABLE(void)  { TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC5->COUNT16.SYNCBUSY.bit.ENABLE); }
-  static inline void FUEL8_TIMER_DISABLE(void)  { TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC5->COUNT16.SYNCBUSY.bit.ENABLE); }
+  // Fuel enables first... enable the Match Compare SET interrupts...
+  static inline void FUEL1_TIMER_ENABLE(void)  { TC0->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL2_TIMER_ENABLE(void)  { TC0->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL3_TIMER_ENABLE(void)  { TC1->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC1->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL4_TIMER_ENABLE(void)  { TC1->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC1->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL5_TIMER_ENABLE(void)  { TC4->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC4->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL6_TIMER_ENABLE(void)  { TC4->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC4->COUNT16.SYNCBUSY.bit.ENABLE); }  ///  All these are wrong - I want to enable the MCx, not the whole timer...
+  static inline void FUEL7_TIMER_ENABLE(void)  { TC5->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC5->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL8_TIMER_ENABLE(void)  { TC5->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC5->COUNT16.SYNCBUSY.bit.ENABLE); }
 
-    static inline void IGN1_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN2_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN3_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN4_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN5_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN6_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN7_TIMER_ENABLE(void)  {<macro here>;}
-    static inline void IGN8_TIMER_ENABLE(void)  {<macro here>;}
+  // Fuel disables next... enable the Match Compare CLEAR interrupts... (*sigh*)
+  static inline void FUEL1_TIMER_DISABLE(void)  { TC0->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL2_TIMER_DISABLE(void)  { TC0->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC1; while (TC0->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL3_TIMER_DISABLE(void)  { TC1->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0; while (TC1->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL4_TIMER_DISABLE(void)  { TC1->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC1; while (TC1->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL5_TIMER_DISABLE(void)  { TC4->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0; while (TC4->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL6_TIMER_DISABLE(void)  { TC4->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC1; while (TC4->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL7_TIMER_DISABLE(void)  { TC5->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC0; while (TC5->COUNT16.SYNCBUSY.bit.ENABLE); }
+  static inline void FUEL8_TIMER_DISABLE(void)  { TC5->COUNT16.INTENCLR.reg |= TC_INTENCLR_MC1; while (TC5->COUNT16.SYNCBUSY.bit.ENABLE); }
 
+    // Ignition compare enables...
+    static inline void IGN1_TIMER_ENABLE(void)  { TC2->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC2->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN2_TIMER_ENABLE(void)  { TC2->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC2->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN3_TIMER_ENABLE(void)  { TC3->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC3->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN4_TIMER_ENABLE(void)  { TC3->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC3->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN5_TIMER_ENABLE(void)  { TC6->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC6->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN6_TIMER_ENABLE(void)  { TC6->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC6->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN7_TIMER_ENABLE(void)  { TC7->COUNT16.INTENSET.reg |= TC_INTENSET_MC0; while (TC7->COUNT16.SYNCBUSY.bit.ENABLE); }
+    static inline void IGN8_TIMER_ENABLE(void)  { TC7->COUNT16.INTENSET.reg |= TC_INTENSET_MC1; while (TC7->COUNT16.SYNCBUSY.bit.ENABLE); }
+
+    // and finally, ignition compare disables.  :)
     static inline void IGN1_TIMER_DISABLE(void)  { TC2->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC2->COUNT16.SYNCBUSY.bit.ENABLE); }
     static inline void IGN2_TIMER_DISABLE(void)  { TC2->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC2->COUNT16.SYNCBUSY.bit.ENABLE); }
     static inline void IGN3_TIMER_DISABLE(void)  { TC3->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC3->COUNT16.SYNCBUSY.bit.ENABLE); }
@@ -111,8 +119,7 @@
     static inline void IGN7_TIMER_DISABLE(void)  { TC7->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC7->COUNT16.SYNCBUSY.bit.ENABLE); }
     static inline void IGN8_TIMER_DISABLE(void)  { TC7->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE; while (TC7->COUNT16.SYNCBUSY.bit.ENABLE); }
 
-  
-  // Yet another tick-period... 2us
+    // Yet another tick-period... 2us (to begin.)
   #define MAX_TIMER_PERIOD 131070 //The longest period of time (in uS) that the timer can permit (In this case it is 65535 * 2, as each timer tick is 2uS)  (Why not 65536 * 2?)
   #define uS_TO_TIMER_COMPARE(uS) ((uS) >> 1) //Converts a given number of uS into the required number of timer ticks until that time has passed
 /*
@@ -121,7 +128,7 @@
 */
   //macro functions for enabling and disabling timer interrupts for the boost and vvt functions
   #define ENABLE_BOOST_TIMER()  <macro here>
-  #define DISABLE_BOOST_TIMER(void)  { <macro here>
+  #define DISABLE_BOOST_TIMER(void)  <macro here> 
 
   #define ENABLE_VVT_TIMER()    <macro here>
   #define DISABLE_VVT_TIMER()   <macro here>
@@ -148,5 +155,5 @@
 */
 
 
-#endif //CORE_TEMPLATE
-#endif //TEMPLATE_H
+#endif //CORE_SAMD51
+#endif //BOARD_GRANDCENTRAL_H
