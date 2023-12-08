@@ -8,6 +8,8 @@ void initBoard()
     ***********************************************************************************************************
     * General
     */
+    // FoxUnpop: TODO Set up a secondary serial port?
+    pSecondarySerial = &Serial2;
 
     /*
     ***********************************************************************************************************
@@ -82,8 +84,70 @@ void initBoard()
 
 }
 
+// All ISRs 
 
-// Fun little freeRam routine.
+void TC0_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC0->COUNT16.INTFLAG.bit.MC0) { TC0->COUNT16.INTFLAG.bit.MC0 = 1; fuelSchedule1Interrupt(); }
+    if (TC0->COUNT16.INTFLAG.bit.MC1) { TC0->COUNT16.INTFLAG.bit.MC1 = 1; fuelSchedule2Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC1_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC1->COUNT16.INTFLAG.bit.MC0) { TC1->COUNT16.INTFLAG.bit.MC0 = 1; fuelSchedule3Interrupt(); }
+    if (TC1->COUNT16.INTFLAG.bit.MC1) { TC1->COUNT16.INTFLAG.bit.MC1 = 1; fuelSchedule4Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC2_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC2->COUNT16.INTFLAG.bit.MC0) { TC2->COUNT16.INTFLAG.bit.MC0 = 1; ignitionSchedule1Interrupt(); }
+    if (TC2->COUNT16.INTFLAG.bit.MC1) { TC2->COUNT16.INTFLAG.bit.MC1 = 1; ignitionSchedule2Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC3_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC3->COUNT16.INTFLAG.bit.MC0) { TC3->COUNT16.INTFLAG.bit.MC0 = 1; ignitionSchedule3Interrupt(); }
+    if (TC3->COUNT16.INTFLAG.bit.MC1) { TC3->COUNT16.INTFLAG.bit.MC1 = 1; ignitionSchedule4Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC4_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC4->COUNT16.INTFLAG.bit.MC0) { TC4->COUNT16.INTFLAG.bit.MC0 = 1; fuelSchedule5Interrupt(); }
+    if (TC4->COUNT16.INTFLAG.bit.MC1) { TC4->COUNT16.INTFLAG.bit.MC1 = 1; fuelSchedule6Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC5_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC5->COUNT16.INTFLAG.bit.MC0) { TC5->COUNT16.INTFLAG.bit.MC0 = 1; fuelSchedule7Interrupt(); }
+    if (TC5->COUNT16.INTFLAG.bit.MC1) { TC5->COUNT16.INTFLAG.bit.MC1 = 1; fuelSchedule8Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC6_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC6->COUNT16.INTFLAG.bit.MC0) { TC6->COUNT16.INTFLAG.bit.MC0 = 1; ignitionSchedule5Interrupt(); }
+    if (TC6->COUNT16.INTFLAG.bit.MC1) { TC6->COUNT16.INTFLAG.bit.MC1 = 1; ignitionSchedule6Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+void TC7_Handler() {
+    // Check if MC0, if yes, clear it and git'er'done; or do same for MC1
+    if (TC7->COUNT16.INTFLAG.bit.MC0) { TC7->COUNT16.INTFLAG.bit.MC0 = 1; ignitionSchedule7Interrupt(); }
+    if (TC7->COUNT16.INTFLAG.bit.MC1) { TC7->COUNT16.INTFLAG.bit.MC1 = 1; ignitionSchedule8Interrupt(); }
+    // TODO: probably should be some 'oh no it's all gone wrong' code here.
+}
+
+
+void TCC0_0_Handler() { }
+void TCC0_1_Handler() { }
+//etc...
+
+// Fun little free RAM routine.
 extern "C" char *sbrk(int i);
 
 uint16_t freeRam() {
@@ -96,10 +160,5 @@ uint16_t freeRam() {
 
 void doSystemReset() { return; }
 void jumpToBootloader() { return; }
-
-// All ISRs 
-
-
-
 
 #endif

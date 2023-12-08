@@ -59,7 +59,7 @@ void disablePendingIgnSchedule(byte channel);
 void refreshIgnitionSchedule1(unsigned long timeToEnd);
 
 //The ARM cores use separate functions for their ISRs
-#if defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY)
+#if defined(ARDUINO_ARCH_STM32) || defined(CORE_TEENSY) || defined(CORE_SAMD51)  // FoxUnpop: Added SAMD51 for Grand Central
   void fuelSchedule1Interrupt(void);
   void fuelSchedule2Interrupt(void);
   void fuelSchedule3Interrupt(void);
