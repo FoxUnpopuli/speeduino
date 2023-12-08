@@ -20,6 +20,15 @@
 
   // FoxUnpop: SD card on SPI1.
   #define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
+  #define SD_CONFIG SDCARD_SS_PIN // on SAMD51, SD.begin(<chip select pin>) is all you need...?
+
+  /* Needed for SD library
+  #define SDCARD_SPI          SPI1
+  #define SDCARD_MISO_PIN     PIN_SPI1_MISO
+  #define SDCARD_MOSI_PIN     PIN_SPI1_MOSI
+  #define SDCARD_SCK_PIN      PIN_SPI1_SCK
+  #define SDCARD_SS_PIN       PIN_SPI1_SS
+  */
 
   #define BOARD_MAX_IO_PINS  70     //Same as a MEGA...
   #define BOARD_MAX_DIGITAL_PINS 54 //Also same.  ADC pins in globals.h
