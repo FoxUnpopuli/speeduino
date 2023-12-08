@@ -107,6 +107,7 @@
   #define BOARD_H "board_grandcentral.h"
   #define CORE_SAMD51
   #define CORE_SAM
+  #define BOARD_MAX_ADC_PINS  15 //Number of analog pins, FoxUnpop: dunno why here instead of board_file...?
   #define INJ_CHANNELS 8
   #define IGN_CHANNELS 8
 #else

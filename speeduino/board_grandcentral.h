@@ -13,22 +13,31 @@
 */
   #define PORT_TYPE uint32_t //Size of the port variables (Eg inj1_pin_port). Most systems use a byte, but SAMD21 and possibly others are a 32-bit unsigned int
   #define PINMASK_TYPE uint32_t
+  #define COMPARE_TYPE uint16_t
+
   #define SERIAL_BUFFER_SIZE 517 //Size of the serial buffer used by new comms protocol. For SD transfers this must be at least 512 + 1 (flag) + 4 (sector)
-  #define FPU_MAX_SIZE 0 //Size of the FPU buffer. 0 means no FPU.
-  #define BOARD_MAX_IO_PINS  52 //digital pins + analog channels + 1
-  #define BOARD_MAX_DIGITAL_PINS 52 //Pretty sure this isn't right
-  #define EEPROM_LIB_H <EEPROM.h> //The name of the file that provides the EEPROM class
-  typedef int eeprom_address_t;
+  #define FPU_MAX_SIZE 32 //Size of the FPU buffer. 0 means no FPU.  (FoxUnpop: this means word bitlength the FPU works in, right?)
+
+  // FoxUnpop: SD card on SPI1.
+  #define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
+
+  #define BOARD_MAX_IO_PINS  70     //Same as a MEGA...
+  #define BOARD_MAX_DIGITAL_PINS 54 //Also same.  ADC pins in globals.h
+
+  // FoxUnpop: Might need help with this, Grand Central has lovely QSPI flash onboard and a library to use it...  not sure if below is compatible?
+  #define EEPROM_LIB_H "src/SPIAsEEPROM/SPIAsEEPROM.h"
+  typedef uint16_t eeprom_address_t;
+  
   #define micros_safe() micros() //timer5 method is not used on anything but AVR, the micros_safe() macro is simply an alias for the normal micros()
-  // MiF/Grand Central: Don't know what the Arduino/Adafruit routine is for doing micros(), but if it uses a TC/TCC then that might be a problem...
-  //                    ...however, tt may use the RTC in which case, 'yay!'
   void initBoard();
   uint16_t freeRam();
   void doSystemReset();
   void jumpToBootloader();
 
   #define pinIsReserved(pin)  ( ((pin) == 0) ) //Forbidden pins like USB
-
+  #ifndef LED_BUILTIN
+    #define LED_BUILTIN 13
+  #endif
 /*
 ***********************************************************************************************************
 * Schedules
