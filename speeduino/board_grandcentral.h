@@ -7,6 +7,23 @@
 
 #include "sam.h"
 
+// Just in case Serial1 (pins 0/1) not enough
+// extern Uart Serial2;
+/* On Pins 18(PB12) for TX & 19(PB13) for RX
+For reference:
+  Serial1
+  Pin 00 { PORTB, 25, PIO_SERCOM, PIN_ATTR_DIGITAL, No_ADC_Channel, NOT_ON_PWM, NOT_ON_TIMER, EXTERNAL_INT_9 },  // RX: SERCOMX/PAD[1]
+  Pin 01 { PORTB, 24, PIO_SERCOM, PIN_ATTR_DIGITAL, No_ADC_Channel, NOT_ON_PWM, NOT_ON_TIMER, EXTERNAL_INT_8 },  // TX: SERCOMX/PAD[0]
+  
+  and Serial2
+  Probably should set the peripheral type to match the above, removing the TCC3 output....  TODO FoxUnpop
+  Pin 18 { PORTB, 12, PIO_SERCOM, PIN_ATTR_PWM_F, No_ADC_Channel, TCC3_CH0, NOT_ON_TIMER, EXTERNAL_INT_12 },     // UART1_TX
+  Pin 19 { PORTB, 13, PIO_SERCOM, PIN_ATTR_PWM_F, No_ADC_Channel, TCC3_CH1, NOT_ON_TIMER, EXTERNAL_INT_13 },     // UART1_RX
+*/
+
+
+
+
 /*
 ***********************************************************************************************************
 * General
@@ -44,9 +61,11 @@
   void jumpToBootloader();
 
   #define pinIsReserved(pin)  ( ((pin) == 0) ) //Forbidden pins like USB
-  #ifndef LED_BUILTIN
-    #define LED_BUILTIN 13
-  #endif
+
+  // Might be useful for looping code...
+  extern Tc* TCx[8]; 
+
+
 /*
 ***********************************************************************************************************
 * Schedules

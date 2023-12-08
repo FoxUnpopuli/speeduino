@@ -1,6 +1,8 @@
 #include "globals.h"
 #if defined(CORE_SAMD51)
 
+// Might be useful for looping...
+Tc* TCx[8] = {TC0, TC1, TC2, TC3, TC4, TC5, TC6, TC7}; // Initialization
 
 void initBoard()
 {
@@ -9,8 +11,29 @@ void initBoard()
     * General
     */
     // FoxUnpop: TODO Set up a secondary serial port?
-    pSecondarySerial = &Serial2;
+    // Serial1 is available on 0/1 and is set up in the Variant.cpp file...  do we need a Serial2 as well?
+    /*
+        Uart Serial2( SERCOM_SERIAL2, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX ) ;
 
+        void SERCOM4_0_Handler()
+        {
+        Serial2.IrqHandler();
+        }
+        void SERCOM4_1_Handler()
+        {
+        Serial2.IrqHandler();
+        }
+        void SERCOM4_2_Handler()
+        {
+        Serial2.IrqHandler();
+        }
+        void SERCOM4_3_Handler()
+        {
+        Serial2.IrqHandler();
+        }
+
+    */
+    pSecondarySerial = &Serial1;
     /*
     ***********************************************************************************************************
     * Schedules
@@ -70,16 +93,7 @@ void initBoard()
     TC6->COUNT16.INTENSET.reg = 0; TC6->COUNT16.INTENSET.bit.MC0 = 1; TC6->COUNT16.INTENSET.bit.MC1 = 1; TC6->COUNT16.INTENSET.bit.OVF = 1;
     TC7->COUNT16.INTENSET.reg = 0; TC7->COUNT16.INTENSET.bit.MC0 = 1; TC7->COUNT16.INTENSET.bit.MC1 = 1; TC7->COUNT16.INTENSET.bit.OVF = 1;
 
-  TC2->COUNT16.CC[0].reg = 19999;                    // Use CC0 register as TOP value, set for 50Hz PWM  
-  while (TC2->COUNT16.SYNCBUSY.bit.CC0);             // Wait for synchronization
-  TC2->COUNT16.CC[1].reg = 9999;                     // Set the duty cycle to 50% (CC1 half of CC0)
-  while (TC2->COUNT16.SYNCBUSY.bit.CC1);             // Wait for synchronization
-  TC2->COUNT16.CTRLA.bit.ENABLE = 1;                 // Enable timer TC2
-  while (TC2->COUNT16.SYNCBUSY.bit.ENABLE);    
-
-
     // Set up all TCs in the Nested Vector Interrupt Controller...
-    // ...all ahead full, warp drive at your command.
     NVIC_EnableIRQ(TC0_IRQn);
     NVIC_EnableIRQ(TC1_IRQn);
     NVIC_EnableIRQ(TC2_IRQn);
@@ -88,7 +102,16 @@ void initBoard()
     NVIC_EnableIRQ(TC5_IRQn);
     NVIC_EnableIRQ(TC6_IRQn);
     NVIC_EnableIRQ(TC7_IRQn);
-  
+
+    // fill all the compare registers for fun, theoretically counters will just overflow at 0xFFFF, so no MAX/TOP need setting.
+    for (int i = 0; i < 8; i++) {
+        TCx[i]->COUNT16.CC[0].reg = 65535;          // just load the compare at the top value to begin
+        while (TCx[i]->COUNT16.SYNCBUSY.bit.CC0);   // synch
+        TCx[i]->COUNT16.CC[1].reg = 65535;          
+        while (TCx[i]->COUNT16.SYNCBUSY.bit.CC1);
+        TCx[i]->COUNT16.COUNT.reg = 0;              // zero the count...
+        }
+        // ...all ahead full, warp drive at your command.
 
 }
 
