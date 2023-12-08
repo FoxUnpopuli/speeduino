@@ -70,6 +70,14 @@ void initBoard()
     TC6->COUNT16.INTENSET.reg = 0; TC6->COUNT16.INTENSET.bit.MC0 = 1; TC6->COUNT16.INTENSET.bit.MC1 = 1; TC6->COUNT16.INTENSET.bit.OVF = 1;
     TC7->COUNT16.INTENSET.reg = 0; TC7->COUNT16.INTENSET.bit.MC0 = 1; TC7->COUNT16.INTENSET.bit.MC1 = 1; TC7->COUNT16.INTENSET.bit.OVF = 1;
 
+  TC2->COUNT16.CC[0].reg = 19999;                    // Use CC0 register as TOP value, set for 50Hz PWM  
+  while (TC2->COUNT16.SYNCBUSY.bit.CC0);             // Wait for synchronization
+  TC2->COUNT16.CC[1].reg = 9999;                     // Set the duty cycle to 50% (CC1 half of CC0)
+  while (TC2->COUNT16.SYNCBUSY.bit.CC1);             // Wait for synchronization
+  TC2->COUNT16.CTRLA.bit.ENABLE = 1;                 // Enable timer TC2
+  while (TC2->COUNT16.SYNCBUSY.bit.ENABLE);    
+
+
     // Set up all TCs in the Nested Vector Interrupt Controller...
     // ...all ahead full, warp drive at your command.
     NVIC_EnableIRQ(TC0_IRQn);

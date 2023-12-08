@@ -37,6 +37,9 @@
     #define SD_CS_PIN BUILTIN_SDCARD
 #elif defined CORE_STM32
     #define SD_CS_PIN PD2  //CS pin can be pretty much anything, but PD2 is one of the ones left unused from SDIO pins.
+#elif defined _VARIANT_GRAND_CENTRAL_M4_
+    // You got it all in the variant.h under PIN_SPI_SS, but...
+    #define SD_CS_PIN 83
 #else
     #define SD_CS_PIN 10 //This is a made up value for now
 #endif
