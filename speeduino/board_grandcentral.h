@@ -199,6 +199,7 @@ For reference:
 * and top of this file for Serial2 setup if a second UART is required also on top of Serial/USB & Serial1/UART
 */
 #define secondarySerial_AVAILABLE
+#define SECONDARY_SERIAL_T Uart
 
 
 
