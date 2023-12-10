@@ -1,15 +1,19 @@
 #include "globals.h"
 #if defined(CORE_SAMD51)
 
-// Might be useful for looping...
+// Might be useful for looping in setup...
 Tc* TCx[8] = {TC0, TC1, TC2, TC3, TC4, TC5, TC6, TC7}; // Initialization
+Tcc* TCCx[5] = {TCC0, TCC1, TCC2, TCC3, TCC4}; // Initialization; 0 has 6, 1 has 4, 2 has 3, 3 & 4 have 2 compare channels.
 
 void initBoard()
 {
     /*
     ***********************************************************************************************************
     * General
+    * I think this setup is correct, Serial1 is configured by default for the Adafruit GC.
     */
+        pSecondarySerial = &Serial1;
+ 
     // FoxUnpop: TODO Set up a secondary serial port?
     // Serial1 is available on 0/1 and is set up in the Variant.cpp file...  do we need a Serial2 as well?
     /*
@@ -33,22 +37,7 @@ void initBoard()
         }
 
     */
-    pSecondarySerial = &Serial1;
-    /*
-    ***********************************************************************************************************
-    * Schedules
-    */
-
-      /*
-    ***********************************************************************************************************
-    * Auxiliaries
-    */
-
-    /*
-    ***********************************************************************************************************
-    * Idle
-    */
-
+    
     /*
     ***********************************************************************************************************
     * Schedules
@@ -84,6 +73,7 @@ void initBoard()
     TC7->COUNT16.CTRLA.reg = TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_PRESCSYNC_GCLK | TC_CTRLA_MODE_COUNT16;
 
     // Disable all TC interrupts, then enable the MC0 and MC1 interrupts... and the overflow as well just in case
+    // Don't think this is MISRA-compliant...
     TC0->COUNT16.INTENSET.reg = 0; TC0->COUNT16.INTENSET.bit.MC0 = 1; TC0->COUNT16.INTENSET.bit.MC1 = 1; TC0->COUNT16.INTENSET.bit.OVF = 1;
     TC1->COUNT16.INTENSET.reg = 0; TC1->COUNT16.INTENSET.bit.MC0 = 1; TC1->COUNT16.INTENSET.bit.MC1 = 1; TC1->COUNT16.INTENSET.bit.OVF = 1;
     TC2->COUNT16.INTENSET.reg = 0; TC2->COUNT16.INTENSET.bit.MC0 = 1; TC2->COUNT16.INTENSET.bit.MC1 = 1; TC2->COUNT16.INTENSET.bit.OVF = 1;
@@ -104,6 +94,7 @@ void initBoard()
     NVIC_EnableIRQ(TC7_IRQn);
 
     // fill all the compare registers for fun, theoretically counters will just overflow at 0xFFFF, so no MAX/TOP need setting.
+    // Now I setup  this loop method, I could have done all the setups above like this... TODO
     for (int i = 0; i < 8; i++) {
         TCx[i]->COUNT16.CC[0].reg = 65535;          // just load the compare at the top value to begin
         while (TCx[i]->COUNT16.SYNCBUSY.bit.CC0);   // synch
@@ -114,6 +105,26 @@ void initBoard()
         // ...all ahead full, warp drive at your command.
 
 }
+
+/*
+    ***********************************************************************************************************
+    * Auxiliaries
+    * Setup big boy TCC timercounters in the simplest way:
+    * Probably need to disassociate them from the PORTs to ensure GC board pin outputs behave as expected: TODO
+    */
+
+
+
+
+
+    /*
+    ***********************************************************************************************************
+    * Idle
+    * Setup big boy TCC timercounter TCC0 as the PWM-output idle control.  Is it always PWM?
+    * Probably need to disassociate them from the PORTs to ensure GC board pin outputs behave as expected: TODO
+    */
+
+
 
 // All ISRs 
 
