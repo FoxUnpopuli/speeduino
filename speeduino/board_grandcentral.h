@@ -47,8 +47,8 @@ For reference:
   #define SDCARD_SS_PIN       PIN_SPI1_SS
   */
 
-  #define BOARD_MAX_IO_PINS  70     //Same as a MEGA...
-  #define BOARD_MAX_DIGITAL_PINS 54 //Also same.  ADC pins in globals.h
+  #define BOARD_MAX_IO_PINS       70      //Same as a MEGA...
+  #define BOARD_MAX_DIGITAL_PINS  54      //Also same.  ADC pins in globals.h
 
   // FoxUnpop: Might need help with this, Grand Central has lovely QSPI flash onboard and a library to use it...  not sure if below is compatible?
   #define EEPROM_LIB_H "src/SPIAsEEPROM/SPIAsEEPROM.h"
@@ -162,33 +162,40 @@ For reference:
 /*
 ***********************************************************************************************************
 * Auxiliaries
+* Set up the macro functions for counters, compares, enabling and disabling timer interrupts for the boost and vvt functions
 */
-  //macro functions for enabling and disabling timer interrupts for the boost and vvt functions
-  #define ENABLE_BOOST_TIMER()  <macro here>
-  #define DISABLE_BOOST_TIMER(void)  <macro here> 
+   
+  #define BOOST_TIMER_COMPARE   TCC1->CC[0].bit.CC
+  #define BOOST_TIMER_COUNTER   TCC1->COUNT.reg
 
-  #define ENABLE_VVT_TIMER()    <macro here>
-  #define DISABLE_VVT_TIMER()   <macro here>
+  #define VVT_TIMER_COMPARE     TCC1->CC[1].bit.CC
+  #define VVT_TIMER_COUNTER     TCC1->COUNT.reg
 
-  #define BOOST_TIMER_COMPARE   <register here>
-  #define BOOST_TIMER_COUNTER   <register here>
-  #define VVT_TIMER_COMPARE     <register here>
-  #define VVT_TIMER_COUNTER     <register here>
+  #define ENABLE_BOOST_TIMER()  TCC1->INTENSET.bit.MC0 = 0x1;
+  #define DISABLE_BOOST_TIMER() TCC1->INTENSET.bit.MC0 = 0x0;
+
+  #define ENABLE_VVT_TIMER()    TCC1->INTENSET.bit.MC1 = 0x1;
+  #define DISABLE_VVT_TIMER()   TCC1->INTENSET.bit.MC1 = 0x0;
+
 
 /*
 ***********************************************************************************************************
 * Idle
+* Same as above, but for the timer controlling PWM idle
 */
-  //Same as above, but for the timer controlling PWM idle
-  #define IDLE_COUNTER          <register here>
-  #define IDLE_COMPARE          <register here>
 
-  #define IDLE_TIMER_ENABLE()   <macro here>
-  #define IDLE_TIMER_DISABLE()  <macro here>
+  #define IDLE_COMPARE          TCC0->CC[0].bit.CC
+  #define IDLE_COUNTER          TCC0->COUNT.reg
+ 
+  #define IDLE_TIMER_ENABLE()   TCC0->INTENSET.bit.MC0 = 0x1;
+  #define IDLE_TIMER_DISABLE()  TCC0->INTENSET.bit.MC0 = 0x0;
 
 /*
 ***********************************************************************************************************
 * CAN / Second serial
+* E54 can set up here, eventually.
+* Second serial port is implemented under Serial1 by default on the Adafruit GC.  Still TODO on that one,
+* and top of this file for Serial2 setup if a second UART is required also on top of Serial/USB & Serial1/UART
 */
 
 
