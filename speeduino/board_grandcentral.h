@@ -67,7 +67,7 @@ For reference:
 
   // Might be useful for looping code...
   extern Tc* TCx[8]; 
-
+  extern Tcc* TCCx[5];
 
 /*
 ***********************************************************************************************************
