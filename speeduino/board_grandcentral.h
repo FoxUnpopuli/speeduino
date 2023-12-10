@@ -32,7 +32,8 @@ For reference:
   #define PINMASK_TYPE uint32_t
   #define COMPARE_TYPE uint16_t
 
-  #define SERIAL_BUFFER_SIZE 517 //Size of the serial buffer used by new comms protocol. For SD transfers this must be at least 512 + 1 (flag) + 4 (sector)
+  // #define SERIAL_BUFFER_SIZE 517 //Size of the serial buffer used by new comms protocol. For SD transfers this must be at least 512 + 1 (flag) + 4 (sector)
+  // SERIAL_BUFFER_SIZE is set to 350 in framework-arduino-samd-adafruit\cores\arduino/RingBuffer.h
   #define FPU_MAX_SIZE 32 //Size of the FPU buffer. 0 means no FPU.  (FoxUnpop: this means word bitlength the FPU works in, right?)
 
   // FoxUnpop: SD card on SPI1.
@@ -197,6 +198,8 @@ For reference:
 * Second serial port is implemented under Serial1 by default on the Adafruit GC.  Still TODO on that one,
 * and top of this file for Serial2 setup if a second UART is required also on top of Serial/USB & Serial1/UART
 */
+#define secondarySerial_AVAILABLE
+
 
 
 #endif //CORE_SAMD51
