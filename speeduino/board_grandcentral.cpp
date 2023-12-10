@@ -1,5 +1,11 @@
 #include "globals.h"
 #if defined(CORE_SAMD51)
+#include "board_grandcentral.h"
+#include "auxiliaries.h"
+#include "idle.h"
+#include "scheduler.h"
+#include "timers.h"
+#include "comms_secondary.h"
 
 // Might be useful for looping in setup...
 Tc* TCx[8] = {TC0, TC1, TC2, TC3, TC4, TC5, TC6, TC7}; // Initialization
