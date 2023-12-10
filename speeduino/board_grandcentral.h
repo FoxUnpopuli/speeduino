@@ -37,8 +37,10 @@ For reference:
   #define FPU_MAX_SIZE 32 //Size of the FPU buffer. 0 means no FPU.  (FoxUnpop: this means word bitlength the FPU works in, right?)
 
   // FoxUnpop: SD card on SPI1.
-  #define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
-  #define SD_CONFIG SDCARD_SS_PIN // on SAMD51, SD.begin(<chip select pin>) is all you need...?
+  //#define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
+  //#define SD_CONFIG SDCARD_SS_PIN // on SAMD51, SD.begin(<chip select pin>) is all you need...?
+//  TODO - not yet
+
 
   /* Needed for SD library
   #define SDCARD_SPI          SPI1

@@ -540,7 +540,7 @@ extern volatile unsigned int toothHistoryIndex;
 extern unsigned long currentLoopTime; /**< The time (in uS) that the current mainloop started */
 extern volatile uint16_t ignitionCount; /**< The count of ignition events that have taken place since the engine started */
 //The below shouldn't be needed and probably should be cleaned up, but the Atmel SAM (ARM) boards use a specific type for the trigger edge values rather than a simple byte/int
-#if defined(CORE_SAMD21)
+#if defined(CORE_SAMD21) || defined(CORE_SAMD51) // Added SAMD51 here for Grand Central TODO - tidyup for SAME54?
   extern PinStatus primaryTriggerEdge;
   extern PinStatus secondaryTriggerEdge;
   extern PinStatus tertiaryTriggerEdge;
