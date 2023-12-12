@@ -19,6 +19,12 @@ void initBoard()
     * I think this setup is correct, Serial1 is configured by default for the Adafruit GC.
     */
         pSecondarySerial = &Serial1;
+
+    // Setup clocks for ALL THE TIMER/COMPARES!
+    MCLK->APBAMASK.reg = MCLK_APBAMASK_TC0 | MCLK_APBAMASK_TC1 ;
+    MCLK->APBBMASK.reg = MCLK_APBBMASK_TC2 | MCLK_APBBMASK_TC3 | MCLK_APBBMASK_TCC0 | MCLK_APBBMASK_TCC1 ;
+    MCLK->APBCMASK.reg = MCLK_APBCMASK_TC4 | MCLK_APBCMASK_TC5 ;
+    MCLK->APBDMASK.reg = MCLK_APBDMASK_TC6 | MCLK_APBDMASK_TC7 ;
  
     // FoxUnpop: TODO Set up a secondary serial port?
     // Serial1 is available on 0/1 and is set up in the Variant.cpp file...  do we need a Serial2 as well?
@@ -48,11 +54,6 @@ void initBoard()
     ***********************************************************************************************************
     * Schedules
     */
-    // Setup clocks for ALL THE TIMER/COMPARES!
-    MCLK->APBAMASK.reg = MCLK_APBAMASK_TC0 | MCLK_APBAMASK_TC1 ;
-    MCLK->APBBMASK.reg = MCLK_APBBMASK_TC2 | MCLK_APBBMASK_TC3 ;
-    MCLK->APBCMASK.reg = MCLK_APBCMASK_TC4 | MCLK_APBCMASK_TC5 ;
-    MCLK->APBDMASK.reg = MCLK_APBDMASK_TC6 | MCLK_APBDMASK_TC7 ;
               
     // Set up the generic clock (GCLK7) bang on 500kHz, 2us tick - for shiggles
     GCLK->GENCTRL[7].reg = GCLK_GENCTRL_DIV(96) |       // Divide the 48MHz clock source by divisor 96: 48MHz/96 = 500KHz
@@ -119,6 +120,14 @@ void initBoard()
     * Probably need to disassociate them from the PORTs to ensure GC board pin outputs behave as expected: TODO
     */
 
+    GCLK->GENCTRL[1].reg =  GCLK_GENCTRL_DIV(3) |       // Divide the 48MHz clock source by divisor 3: 48MHz/3 = 16MHz
+                            GCLK_GENCTRL_IDC |          // Set the duty cycle to 50/50 HIGH/LOW
+                            GCLK_GENCTRL_GENEN |        // Enable GCLK1
+                            GCLK_GENCTRL_SRC_DFLL;      // Generate from 48MHz DFLL clock source
+    while (GCLK->SYNCBUSY.bit.GENCTRL1);                // Wait for synchronization
+
+    GCLK->PCHCTRL[25].reg = GCLK_PCHCTRL_CHEN |         // Enable perhipheral channel
+                            GCLK_PCHCTRL_GEN_GCLK1;     // Connect generic clock 1 to TCC0 and TCC1 at 16MHz
 
 
 
@@ -190,9 +199,38 @@ void TC7_Handler() {
     // TODO: probably should be some 'oh no it's all gone wrong' code here.
 }
 
+// Idle ISR handler
+void TCC0_1_Handler() {
+    // TCC0_1_Handler only fires on TCC0 MC0... 
+    TCC0->INTFLAG.bit.MC0 = 1; // no need to check, just reset it.
+    idleInterrupt();
 
-void TCC0_0_Handler() { }
-void TCC0_1_Handler() { }
+ }
+
+ // Boost ISR Handler
+void TCC1_1_Handler() { 
+    // TCC1_1_Handler only fires on TCC1 MC0...
+    TCC1->INTFLAG.bit.MC0 = 1; // no need to check, just reset it.
+    boostInterrupt();
+
+ }
+
+ // VVT ISR Handler
+ void TCC1_2_Handler() { 
+    // TCC1_2_Handler only fires on TCC1 MC1...
+    TCC1->INTFLAG.bit.MC1 = 1; // no need to check, just reset it.
+    vvtInterrupt();
+
+ }
+
+ // Fan ISR Handler
+ void TCC1_3_Handler() { 
+    // TCC1_3_Handler only fires on TCC1 MC2...
+    TCC1->INTFLAG.bit.MC2 = 1; // no need to check, just reset it.
+    FanInterrupt();
+
+ }
+ 
 //etc...
 
 // Fun little free RAM routine.

@@ -174,12 +174,19 @@ For reference:
   #define VVT_TIMER_COMPARE     TCC1->CC[1].bit.CC
   #define VVT_TIMER_COUNTER     TCC1->COUNT.reg
 
+  #define FAN_TIMER_COMPARE     TCC1->CC[2].bit.CC
+  #define FAN_TIMER_COUNTER     TCC1->COUNT.reg
+
   #define ENABLE_BOOST_TIMER()  TCC1->INTENSET.bit.MC0 = 0x1;
   #define DISABLE_BOOST_TIMER() TCC1->INTENSET.bit.MC0 = 0x0;
 
   #define ENABLE_VVT_TIMER()    TCC1->INTENSET.bit.MC1 = 0x1;
   #define DISABLE_VVT_TIMER()   TCC1->INTENSET.bit.MC1 = 0x0;
 
+  #define ENABLE_FAN_TIMER()    TCC1->INTENSET.bit.MC2 = 0x1;
+  #define DISABLE_FAN_TIMER()   TCC1->INTENSET.bit.MC2 = 0x0;
+
+ 
 
 /*
 ***********************************************************************************************************
