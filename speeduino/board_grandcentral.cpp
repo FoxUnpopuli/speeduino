@@ -248,7 +248,7 @@ void TCC1_1_Handler() {
  void TCC1_3_Handler() { 
     // TCC1_3_Handler only fires on TCC1 MC2...
     TCC1->INTFLAG.bit.MC2 = 1; // no need to check, just reset it.
-    FanInterrupt();
+    fanInterrupt();
 
  }
 
