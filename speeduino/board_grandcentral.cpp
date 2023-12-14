@@ -21,10 +21,10 @@ void initBoard()
         pSecondarySerial = &Serial1;
 
     // Setup clocks for ALL THE TIMER/COMPARES!
-    MCLK->APBAMASK.reg = MCLK_APBAMASK_TC0 | MCLK_APBAMASK_TC1 ;
-    MCLK->APBBMASK.reg = MCLK_APBBMASK_TC2 | MCLK_APBBMASK_TC3 | MCLK_APBBMASK_TCC0 | MCLK_APBBMASK_TCC1 ;
-    MCLK->APBCMASK.reg = MCLK_APBCMASK_TC4 | MCLK_APBCMASK_TC5 ;
-    MCLK->APBDMASK.reg = MCLK_APBDMASK_TC6 | MCLK_APBDMASK_TC7 ;
+    MCLK->APBAMASK.reg |= MCLK_APBAMASK_TC0 | MCLK_APBAMASK_TC1 ;
+    MCLK->APBBMASK.reg |= MCLK_APBBMASK_TC2 | MCLK_APBBMASK_TC3 | MCLK_APBBMASK_TCC0 | MCLK_APBBMASK_TCC1 ;
+    MCLK->APBCMASK.reg |= MCLK_APBCMASK_TC4 | MCLK_APBCMASK_TC5 ;
+    MCLK->APBDMASK.reg |= MCLK_APBDMASK_TC6 | MCLK_APBDMASK_TC7 | MCLK_APBDMASK_TCC4 ;
  
     // FoxUnpop: TODO Set up a secondary serial port?
     // Serial1 is available on 0/1 and is set up in the Variant.cpp file...  do we need a Serial2 as well?
@@ -47,17 +47,35 @@ void initBoard()
         {
         Serial2.IrqHandler();
         }
-
     */
-    
+
     /*
     ***********************************************************************************************************
-    * Schedules
+    * Low-frequency timer
+    * Millisecond clock, use TCC4 on GLCK1 with 16bit division.
+    * If it doesn't have to be 1 millisecond, but could be 1.024ms, then the SAM's RTC would do a great job of it.
+    */
+    
+    GCLK->GENCTRL[1].reg = GCLK_GENCTRL_DIV(48000) |    // Divide the 48MHz clock source by divisor: 48MHz/48000 = 1kHz or 1ms
+                           GCLK_GENCTRL_GENEN |         // Enable GCLK1
+                           GCLK_GENCTRL_SRC_DFLL;       // Generate from 48MHz DFLL clock source
+    while (GCLK->SYNCBUSY.bit.GENCTRL1);    
+
+    GCLK->PCHCTRL[TCC4_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK1;     // Connect generic clock 1 to TCC4 (38)
+ 
+    TCC4->CTRLA.reg = TCC_CTRLA_PRESCALER_DIV1 | TCC_CTRLA_PRESCSYNC_GCLK ; 
+    TCC4->INTENSET.reg = 0; TCC4->INTENSET.bit.CNT = 1 ;
+  
+    TCC4->CTRLA.bit.ENABLE = 1;                         // Enable timer TCC4
+    while (TCC4->SYNCBUSY.bit.ENABLE);                  // Wait for synchronization
+
+    /*
+    ***********************************************************************************************************
+    * Schedules, all the TCs, using GCLK7
     */
               
     // Set up the generic clock (GCLK7) bang on 500kHz, 2us tick - for shiggles
     GCLK->GENCTRL[7].reg = GCLK_GENCTRL_DIV(96) |       // Divide the 48MHz clock source by divisor 96: 48MHz/96 = 500KHz
-                           GCLK_GENCTRL_IDC |           // Set the duty cycle to 50/50 HIGH/LOW
                            GCLK_GENCTRL_GENEN |         // Enable GCLK7
                            GCLK_GENCTRL_SRC_DFLL;       // Generate from 48MHz DFLL clock source
     while (GCLK->SYNCBUSY.bit.GENCTRL7);                // Wait for synchronization
@@ -111,36 +129,39 @@ void initBoard()
         }
         // ...all ahead full, warp drive at your command.
 
-}
-
-/*
-    ***********************************************************************************************************
-    * Auxiliaries
-    * Setup big boy TCC timercounters in the simplest way:
-    * Probably need to disassociate them from the PORTs to ensure GC board pin outputs behave as expected: TODO
-    */
-
-    GCLK->GENCTRL[1].reg =  GCLK_GENCTRL_DIV(3) |       // Divide the 48MHz clock source by divisor 3: 48MHz/3 = 16MHz
-                            GCLK_GENCTRL_IDC |          // Set the duty cycle to 50/50 HIGH/LOW
-                            GCLK_GENCTRL_GENEN |        // Enable GCLK1
-                            GCLK_GENCTRL_SRC_DFLL;      // Generate from 48MHz DFLL clock source
-    while (GCLK->SYNCBUSY.bit.GENCTRL1);                // Wait for synchronization
-
-    GCLK->PCHCTRL[25].reg = GCLK_PCHCTRL_CHEN |         // Enable perhipheral channel
-                            GCLK_PCHCTRL_GEN_GCLK1;     // Connect generic clock 1 to TCC0 and TCC1 at 16MHz
-
-
 
 
     /*
     ***********************************************************************************************************
-    * Idle
-    * Setup big boy TCC timercounter TCC0 as the PWM-output idle control.  Is it always PWM?
+    * Auxiliaries / Idles using TCC0/1, 
+    * Setup big boy TCC0/1 timercounters in the simplest way:
     * Probably need to disassociate them from the PORTs to ensure GC board pin outputs behave as expected: TODO
     */
 
+    GCLK->GENCTRL[1].reg =  GCLK_GENCTRL_DIV(768) |     // Divide the 48MHz clock source by divisor 3: 48MHz/768 = 62.5kHz / 16us
+                            GCLK_GENCTRL_GENEN |        // Enable GCLK1
+                            GCLK_GENCTRL_SRC_DFLL;      // Generate from 48MHz DFLL clock source
+    while (GCLK->SYNCBUSY.bit.GENCTRL1);                // Wait for synchronization
+
+    GCLK->PCHCTRL[TCC0_GCLK_ID].reg = GCLK_PCHCTRL_CHEN |        // Enable perhipheral channel (25 is both TCC0 and TCC1)
+                                      GCLK_PCHCTRL_GEN_GCLK1;     // Map generic clock 1 to TCC0/1
+
+    TCC0->CTRLA.reg = TCC_CTRLA_PRESCALER_DIV1 | TCC_CTRLA_PRESCSYNC_GCLK ; 
+    TCC0->INTENSET.reg = 0 ; TCC0->INTENSET.bit.MC0 = 1 ;  // Reset interrupts, add MC0 match/compare
+  
+    TCC0->CTRLA.bit.ENABLE = 1;                         // Enable timer TCC0
+    while (TCC0->SYNCBUSY.bit.ENABLE);                  // Wait for synchronization
+
+    TCC1->CTRLA.reg = TCC_CTRLA_PRESCALER_DIV1 | TCC_CTRLA_PRESCSYNC_GCLK ; 
+    // Reset interrupts, add MC0, 1 & 2 match/compares
+    TCC1->INTENSET.reg = 0 ; TCC1->INTENSET.bit.MC0 = 1 ; TCC1->INTENSET.bit.MC1 = 1 ; TCC1->INTENSET.bit.MC2 = 1 ;
+
+    TCC1->CTRLA.bit.ENABLE = 1;                         // Enable timer TCC1
+    while (TCC1->SYNCBUSY.bit.ENABLE);                  // Wait for synchronization
 
 
+
+}
 // All ISRs 
 
 void TC0_Handler() {
@@ -230,9 +251,16 @@ void TCC1_1_Handler() {
     FanInterrupt();
 
  }
+
+  // Millisecond Handler
+ void TCC4_0_Handler() { 
+    // TCC4_0_Handler for !MCx;
+    TCC4->INTFLAG.bit.CNT = 1; //just reset it.
+    oneMSinterval();
+ }
  
 //etc...
-
+ 
 // Fun little free RAM routine.
 extern "C" char *sbrk(int i);
 
