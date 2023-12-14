@@ -50,6 +50,9 @@ For reference:
   #define SDCARD_SS_PIN       PIN_SPI1_SS
   */
 
+  #define RTC_ENABLED
+  #define RTC_LIB_H <TimeLib.h>
+
   #define BOARD_MAX_IO_PINS       70      //Same as a MEGA...
   #define BOARD_MAX_DIGITAL_PINS  54      //Also same.  ADC pins in globals.h
 
