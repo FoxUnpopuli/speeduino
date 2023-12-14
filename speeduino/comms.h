@@ -19,6 +19,9 @@
 #elif defined(CORE_AVR)
   #define BLOCKING_FACTOR       121
   #define TABLE_BLOCKING_FACTOR 64
+#elif defined(CORE_SAMD51)
+  #define BLOCKING_FACTOR       121
+  #define TABLE_BLOCKING_FACTOR 64
 #endif
 
 /**

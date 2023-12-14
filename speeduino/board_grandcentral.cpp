@@ -256,7 +256,7 @@ void TCC1_1_Handler() {
  void TCC4_0_Handler() { 
     // TCC4_0_Handler for !MCx;
     TCC4->INTFLAG.bit.CNT = 1; //just reset it.
-    oneMSinterval();
+    oneMSInterval();
  }
  
 //etc...
