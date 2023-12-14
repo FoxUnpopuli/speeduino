@@ -187,9 +187,9 @@ For reference:
   #define ENABLE_FAN_TIMER()    TCC1->INTENSET.bit.MC2 = 0x1;
   #define DISABLE_FAN_TIMER()   TCC1->INTENSET.bit.MC2 = 0x0;
 
-  void boostInterrupt();
-  void vvtInterrupt();
-  void fanInterrupt();
+  //void boostInterrupt();
+  //void vvtInterrupt();
+ // void fanInterrupt();
 
 /*
 ***********************************************************************************************************
@@ -203,7 +203,7 @@ For reference:
   #define IDLE_TIMER_ENABLE()   TCC0->INTENSET.bit.MC0 = 0x1;
   #define IDLE_TIMER_DISABLE()  TCC0->INTENSET.bit.MC0 = 0x0;
 
-  void idleInterrupt();
+  //void idleInterrupt();
 
 /*
 ***********************************************************************************************************
