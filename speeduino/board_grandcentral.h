@@ -21,7 +21,7 @@ For reference:
   Pin 19 { PORTB, 13, PIO_SERCOM, PIN_ATTR_PWM_F, No_ADC_Channel, TCC3_CH1, NOT_ON_TIMER, EXTERNAL_INT_13 },     // UART1_RX
 */
 
-
+  #define PWM_FAN_AVAILABLE
 
 
 /*
@@ -58,10 +58,15 @@ For reference:
   typedef uint16_t eeprom_address_t;
   
   #define micros_safe() micros() //timer5 method is not used on anything but AVR, the micros_safe() macro is simply an alias for the normal micros()
+  
   void initBoard();
   uint16_t freeRam();
   void doSystemReset();
   void jumpToBootloader();
+
+  //void boostInterrupt();
+  //void vvtInterrupt();
+  //void fanInterrupt();
 
   #define pinIsReserved(pin)  ( ((pin) == 0) ) //Forbidden pins like USB
 
@@ -210,7 +215,7 @@ For reference:
 #define secondarySerial_AVAILABLE
 #define SECONDARY_SERIAL_T Uart
 
-
+ 
 
 #endif //CORE_SAMD51
 #endif //BOARD_GRANDCENTRAL_H
