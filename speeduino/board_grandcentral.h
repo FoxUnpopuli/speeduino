@@ -38,9 +38,6 @@ For reference:
 
   // FoxUnpop: SD card on SPI1.
   #define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
-  #define SD_CONFIG SDCARD_SS_PIN // on SAMD51, SD.begin(<chip select pin>) is all you need...?
-//  TODO - not yet
-
   #define SD_CONFIG  SdioConfig(FIFO_SDIO)
 
   #define RTC_ENABLED
