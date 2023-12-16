@@ -60,7 +60,7 @@ class FramClass
 {
   public:
     FramClass();
-    #if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__) || defined(SAMD51)
+    #if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__)
     FramClass(uint32_t mosi, uint32_t miso, uint32_t sclk, uint32_t ssel = FRAM_DEFAULT_CS_PIN, uint32_t clockspeed = FRAM_DEFAULT_CLOCK);
     FramClass(uint32_t ssel = FRAM_DEFAULT_CS_PIN, SPIClass &_spi = SPI);
     void begin (uint32_t ssel = FRAM_DEFAULT_CS_PIN, SPIClass &_spi = SPI);
@@ -108,7 +108,7 @@ class FramClass
 
 
   private:
-    #if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__) || defined(SAMD51)
+    #if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__)
       volatile uint32_t mosiMask, *mosiPort;
       volatile uint32_t clkMask, *clkPort;
       volatile uint32_t csMask, *csPort;
@@ -128,7 +128,7 @@ class FramClass
     uint8_t  spiSend(uint8_t data);
     uint16_t  spiSend16(uint16_t data);
 
-    #if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__) || defined(SAMD51)
+    #if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__)
     inline void fastWrite(volatile uint32_t *port, uint32_t pin, int8_t state)
     #else
     inline void fastWrite(volatile uint8_t *port, uint8_t pin, int8_t state)

@@ -55,7 +55,7 @@ FramClass::FramClass(void)
 
 /*-----------------------------------------------------------------------------*/
 
-#if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__) || defined(SAMD51)
+#if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__)
 FramClass::FramClass (uint32_t ssel, SPIClass &_spi)
 #else
 FramClass::FramClass (uint8_t ssel, SPIClass &_spi)
@@ -67,7 +67,7 @@ FramClass::FramClass (uint8_t ssel, SPIClass &_spi)
 
 /*-----------------------------------------------------------------------------*/
 
-#if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__) || defined(SAMD51)
+#if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__)
 FramClass::FramClass (uint32_t mosi, uint32_t miso, uint32_t sclk, uint32_t ssel, uint32_t clockspeed)
 #else
 FramClass::FramClass (uint8_t mosi, uint8_t miso, uint8_t sclk, uint8_t ssel, uint32_t clockspeed)
@@ -135,7 +135,7 @@ uint8_t FramClass::isDeviceActive(void) {
 
 /*-----------------------------------------------------------------------------*/
 
-#if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__) || defined(SAMD51)
+#if defined(ARDUINO_ARCH_STM32) || defined(__IMXRT1062__)
 void FramClass::begin (uint32_t ssel, SPIClass &_spi)
 #else
 void FramClass::begin (uint8_t ssel, SPIClass &_spi)
@@ -176,7 +176,7 @@ uint8_t FramClass::write (uint32_t addr, uint8_t data)
   sendAddr(addr);
   spiSend(data);
   deassertCS();
-  #if defined(ARDUINO_ARCH_STM32) || defined(SAMD51)
+  #if defined(ARDUINO_ARCH_STM32)
   delayMicroseconds(5);
   #else
   SOFT_DELAY(5);
@@ -203,7 +203,7 @@ uint8_t FramClass::write (uint32_t addr, uint8_t *data, uint16_t count)
   for (uint16_t i = 0; i < count; ++i)
     spiSend(data[i]);
   deassertCS();
-  #if defined(ARDUINO_ARCH_STM32) || defined(SAMD51)
+  #if defined(ARDUINO_ARCH_STM32)
   delayMicroseconds(5);
   #else
   SOFT_DELAY(5);
@@ -266,7 +266,7 @@ uint8_t FramClass::clear(void)
   for (uint32_t i = 0; i < FRAM_SIZE; ++i)
     spiSend(0x00);
   deassertCS();
-  #if defined(ARDUINO_ARCH_STM32)|| defined(SAMD51)
+  #if defined(ARDUINO_ARCH_STM32)
   delayMicroseconds(5);
   #else
   SOFT_DELAY(5);
@@ -320,7 +320,7 @@ uint8_t FramClass::spiSend(uint8_t data)
     }
     fastWrite(clkPort, clkMask, LOW);
   }
-#if defined(ARDUINO_ARCH_STM32) || defined(SAMD51)
+#if defined(ARDUINO_ARCH_STM32)
   else { reply = spi->transfer(csPin, data, SPI_CONTINUE); }
 #else
   else { reply = spi->transfer(data); }
@@ -345,7 +345,7 @@ uint16_t FramClass::spiSend16(uint16_t data)
     }
     fastWrite(clkPort, clkMask, LOW);
   }
-#if defined(ARDUINO_ARCH_STM32) || defined(SAMD51)
+#if defined(ARDUINO_ARCH_STM32)
   else { reply = spi->transfer16(csPin, data, SPI_CONTINUE); }
 #else
   else { reply = spi->transfer16(data); }
