@@ -6,6 +6,7 @@
 #if defined(CORE_SAMD51)
 
 #include "sam.h"
+#include "Adafruit_SPIFlash.h"
 
 // Just in case Serial1 (pins 0/1) not enough
 // extern Uart Serial2;
@@ -47,8 +48,8 @@ For reference:
   #define BOARD_MAX_DIGITAL_PINS  54      //Also same.  ADC pins in globals.h
 
   // FoxUnpop: Might need help with this, Grand Central has lovely QSPI flash onboard and a library to use it...  not sure if below is compatible?
-  #define EEPROM_LIB_H "src/SPIAsEEPROM/SPIAsEEPROM.h"
-  typedef uint16_t eeprom_address_t;
+  // Hang it all on: https://github.com/adafruit/Adafruit_SPIFlash
+
   
   #define micros_safe() micros() //timer5 method is not used on anything but AVR, the micros_safe() macro is simply an alias for the normal micros()
   
