@@ -74,43 +74,43 @@ For reference:
 * Fuel first:
 */
   
-  #define FUEL1_COUNTER TC0->COUNT16.COUNT.reg
-  #define FUEL2_COUNTER TC0->COUNT16.COUNT.reg
-  #define FUEL3_COUNTER TC1->COUNT16.COUNT.reg
-  #define FUEL4_COUNTER TC1->COUNT16.COUNT.reg
-  #define FUEL5_COUNTER TC4->COUNT16.COUNT.reg
-  #define FUEL6_COUNTER TC4->COUNT16.COUNT.reg
-  #define FUEL7_COUNTER TC5->COUNT16.COUNT.reg
-  #define FUEL8_COUNTER TC5->COUNT16.COUNT.reg
+  #define FUEL1_COUNTER (*(volatile uint16_t *) TC0->COUNT16.COUNT.reg )
+  #define FUEL2_COUNTER (*(volatile uint16_t *) TC0->COUNT16.COUNT.reg )
+  #define FUEL3_COUNTER (*(volatile uint16_t *) TC1->COUNT16.COUNT.reg )
+  #define FUEL4_COUNTER (*(volatile uint16_t *) TC1->COUNT16.COUNT.reg )
+  #define FUEL5_COUNTER (*(volatile uint16_t *) TC4->COUNT16.COUNT.reg )
+  #define FUEL6_COUNTER (*(volatile uint16_t *) TC4->COUNT16.COUNT.reg )
+  #define FUEL7_COUNTER (*(volatile uint16_t *) TC5->COUNT16.COUNT.reg )
+  #define FUEL8_COUNTER (*(volatile uint16_t *) TC5->COUNT16.COUNT.reg )
   
-  #define FUEL1_COMPARE TC0->COUNT16.CC[0].reg  // CC0 register, when matched, sets the MC0 event...
-  #define FUEL2_COMPARE TC0->COUNT16.CC[1].reg  // CC1 register, when matched, sets the MC1 event.  Simples!(?)
-  #define FUEL3_COMPARE TC1->COUNT16.CC[0].reg
-  #define FUEL4_COMPARE TC1->COUNT16.CC[1].reg
-  #define FUEL5_COMPARE TC4->COUNT16.CC[0].reg
-  #define FUEL6_COMPARE TC4->COUNT16.CC[1].reg
-  #define FUEL7_COMPARE TC5->COUNT16.CC[0].reg
-  #define FUEL8_COMPARE TC5->COUNT16.CC[1].reg
+  #define FUEL1_COMPARE (*(volatile uint16_t *) TC0->COUNT16.CC[0].reg ) // CC0 register, when matched, sets the MC0 event...
+  #define FUEL2_COMPARE (*(volatile uint16_t *) TC0->COUNT16.CC[1].reg ) // CC1 register, when matched, sets the MC1 event.  Simples!(?)
+  #define FUEL3_COMPARE (*(volatile uint16_t *) TC1->COUNT16.CC[0].reg )
+  #define FUEL4_COMPARE (*(volatile uint16_t *) TC1->COUNT16.CC[1].reg )
+  #define FUEL5_COMPARE (*(volatile uint16_t *) TC4->COUNT16.CC[0].reg )
+  #define FUEL6_COMPARE (*(volatile uint16_t *) TC4->COUNT16.CC[1].reg )
+  #define FUEL7_COMPARE (*(volatile uint16_t *) TC5->COUNT16.CC[0].reg )
+  #define FUEL8_COMPARE (*(volatile uint16_t *) TC5->COUNT16.CC[1].reg )
 
   // Now Ignitions...
 
-  #define IGN1_COUNTER  TC2->COUNT16.COUNT.reg
-  #define IGN2_COUNTER  TC2->COUNT16.COUNT.reg
-  #define IGN3_COUNTER  TC3->COUNT16.COUNT.reg
-  #define IGN4_COUNTER  TC3->COUNT16.COUNT.reg
-  #define IGN5_COUNTER  TC6->COUNT16.COUNT.reg
-  #define IGN6_COUNTER  TC6->COUNT16.COUNT.reg
-  #define IGN7_COUNTER  TC7->COUNT16.COUNT.reg
-  #define IGN8_COUNTER  TC7->COUNT16.COUNT.reg
+  #define IGN1_COUNTER (*(volatile uint16_t *)  TC2->COUNT16.COUNT.reg )
+  #define IGN2_COUNTER (*(volatile uint16_t *)  TC2->COUNT16.COUNT.reg )
+  #define IGN3_COUNTER (*(volatile uint16_t *)  TC3->COUNT16.COUNT.reg )
+  #define IGN4_COUNTER (*(volatile uint16_t *)  TC3->COUNT16.COUNT.reg )
+  #define IGN5_COUNTER (*(volatile uint16_t *)  TC6->COUNT16.COUNT.reg )
+  #define IGN6_COUNTER (*(volatile uint16_t *)  TC6->COUNT16.COUNT.reg )
+  #define IGN7_COUNTER (*(volatile uint16_t *)  TC7->COUNT16.COUNT.reg )
+  #define IGN8_COUNTER (*(volatile uint16_t *)  TC7->COUNT16.COUNT.reg )
 
-  #define IGN1_COMPARE  TC2->COUNT16.CC[0].reg
-  #define IGN2_COMPARE  TC2->COUNT16.CC[1].reg
-  #define IGN3_COMPARE  TC3->COUNT16.CC[0].reg
-  #define IGN4_COMPARE  TC3->COUNT16.CC[1].reg
-  #define IGN5_COMPARE  TC6->COUNT16.CC[0].reg
-  #define IGN6_COMPARE  TC6->COUNT16.CC[1].reg
-  #define IGN7_COMPARE  TC7->COUNT16.CC[0].reg
-  #define IGN8_COMPARE  TC7->COUNT16.CC[1].reg
+  #define IGN1_COMPARE (*(volatile uint16_t *)  TC2->COUNT16.CC[0].reg )
+  #define IGN2_COMPARE (*(volatile uint16_t *)  TC2->COUNT16.CC[1].reg )
+  #define IGN3_COMPARE (*(volatile uint16_t *)  TC3->COUNT16.CC[0].reg )
+  #define IGN4_COMPARE (*(volatile uint16_t *)  TC3->COUNT16.CC[1].reg )
+  #define IGN5_COMPARE (*(volatile uint16_t *)  TC6->COUNT16.CC[0].reg )
+  #define IGN6_COMPARE (*(volatile uint16_t *)  TC6->COUNT16.CC[1].reg )
+  #define IGN7_COMPARE (*(volatile uint16_t *)  TC7->COUNT16.CC[0].reg )
+  #define IGN8_COMPARE (*(volatile uint16_t *)  TC7->COUNT16.CC[1].reg )
 
 
   // Fuel enables first... enable the Match Compare SET interrupts...
