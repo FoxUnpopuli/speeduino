@@ -21,7 +21,7 @@
 //    work with STM32
 //    added option to use any SPI port
 //    added software version of SPI with configurable speed
-
+#if defined(CORE_SAM)
 #include "Fram.h"
 #ifdef SPI_HAS_TRANSACTION
   SPISettings FRAMSettings(FRAM_DEFAULT_CLOCK, MSBFIRST, SPI_MODE0);
@@ -358,3 +358,4 @@ uint16_t FramClass::spiSend16(uint16_t data)
 
 //FramClass Fram;
 
+#endif // CORE_CAM

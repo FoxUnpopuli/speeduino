@@ -17,7 +17,7 @@
 //
 //  Developed by Claudio Indellicati <bitron.it@gmail.com>
 //  Added features by Vitor_Boss <vitor_boss@yahoo.com.br>
-
+#if defined (CORE_SAM)
 #ifndef __FRAM_H__
 #define __FRAM_H__
 
@@ -160,3 +160,4 @@ class FramClass
 
 #endif   // __FRAM_H__
 
+#endif // CORE_SAM

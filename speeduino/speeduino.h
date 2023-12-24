@@ -12,6 +12,7 @@
 #ifndef SPEEDUINO_H
 #define SPEEDUINO_H
 //#include "globals.h"
+#include <Arduino.h>
 
 #define CRANK_RUN_HYSTER    15
 
