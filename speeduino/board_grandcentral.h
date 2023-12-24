@@ -37,9 +37,14 @@ For reference:
   // SERIAL_BUFFER_SIZE is set to 350 in framework-arduino-samd-adafruit\cores\arduino/RingBuffer.h
   #define FPU_MAX_SIZE 32 //Size of the FPU buffer. 0 means no FPU.  (FoxUnpop: this means word bitlength the FPU works in, right?)
 
+
+  // Use the SAMD21 stuff for now
+  #define EEPROM_LIB_H "src/FlashStorage/FlashAsEEPROM.h"
+  typedef uint16_t eeprom_address_t;
+
   // FoxUnpop: SD card on SPI1.
   #define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
-  #define SD_CONFIG  SdioConfig(FIFO_SDIO)
+  #define SD_CONFIG  SdSpiConfig(PIN_SPI1_SS, DEDICATED_SPI, SD_SCK_MHZ(50), &SDCARD_SPI)
 
   #define RTC_ENABLED
   #define RTC_LIB_H "TimeLib.h"
