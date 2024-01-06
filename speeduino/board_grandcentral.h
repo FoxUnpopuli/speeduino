@@ -6,7 +6,6 @@
 #if defined(CORE_SAMD51)
 
 #include "sam.h"
-#include "Adafruit_SPIFlash.h"
 
 // Just in case Serial1 (pins 0/1) not enough
 // extern Uart Serial2;
@@ -38,10 +37,11 @@ For reference:
   #define FPU_MAX_SIZE 32 //Size of the FPU buffer. 0 means no FPU.  (FoxUnpop: this means word bitlength the FPU works in, right?)
 
 
-  // Use the SAMD21 stuff for now
-  #define EEPROM_LIB_H "src/FlashStorage/FlashAsEEPROM.h"
+  // Use 'standard' SAMD Flash library
+  #define EEPROM_LIB_H "FlashStorage_SAMD.h"
   typedef uint16_t eeprom_address_t;
-
+  // #include EEPROM_LIB_H
+ 
   // FoxUnpop: SD card on SPI1.
   #define SD_LOGGING //SD logging enabled by default for Grand Central as it has the slot built in
   #define SD_CONFIG  SdSpiConfig(PIN_SPI1_SS, DEDICATED_SPI, SD_SCK_MHZ(50), &SDCARD_SPI)
