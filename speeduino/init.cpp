@@ -298,7 +298,8 @@ void initialiseAll(void)
     if((configPage2.pinMapping == 255) || (configPage2.pinMapping == 0)) //255 = EEPROM value in a blank AVR; 0 = EEPROM value in new FRAM
     {
       //First time running on this board
-      resetConfigPages(); 
+      resetConfigPages();
+      configPage4.triggerTeeth = 4; //Avoiddiv by 0 when start decoders
       setPinMapping(3); //Force board to v0.4
     }
     else { setPinMapping(configPage2.pinMapping); }
@@ -571,6 +572,14 @@ void initialiseAll(void)
           channel2InjDegrees = 120;
           channel3InjDegrees = 240;
 
+          if(configPage2.injType == INJ_TYPE_PORT)
+          { 
+            //Force nSquirts to 2 for individual port injection. This prevents TunerStudio forcing the value to 3 even when this isn't wanted. 
+            currentStatus.nSquirts = 2;
+            if(configPage2.strokes == FOUR_STROKE) { CRANK_ANGLE_MAX_INJ = 360; }
+            else { CRANK_ANGLE_MAX_INJ = 180; }
+          }
+          
           //Adjust the injection angles based on the number of squirts
           if (currentStatus.nSquirts > 2)
           {
@@ -969,7 +978,7 @@ void initialiseAll(void)
     //This is ONLY the case on 4 stroke systems
     if( (currentStatus.nSquirts == 3) || (currentStatus.nSquirts == 5) )
     {
-      if(configPage2.strokes == FOUR_STROKE) { CRANK_ANGLE_MAX_INJ = 720; }
+      if(configPage2.strokes == FOUR_STROKE) { CRANK_ANGLE_MAX_INJ = (720U / currentStatus.nSquirts); }
     }
     
     switch(configPage2.injLayout)
@@ -3662,6 +3671,20 @@ void initialiseTriggers(void)
       attachInterrupt(triggerInterrupt2, triggerSecondaryHandler, secondaryTriggerEdge);
       break;   
 
+    case DECODER_SUZUKI_K6A:
+      triggerSetup_SuzukiK6A();
+      triggerHandler = triggerPri_SuzukiK6A; // only primary, no secondary, trigger pattern is over 720 degrees
+      getRPM = getRPM_SuzukiK6A;
+      getCrankAngle = getCrankAngle_SuzukiK6A;
+      triggerSetEndTeeth = triggerSetEndTeeth_SuzukiK6A;
+
+
+      if(configPage4.TrigEdge == 0) { primaryTriggerEdge = RISING; } // Attach the crank trigger wheel interrupt (Hall sensor drags to ground when triggering)
+      else { primaryTriggerEdge = FALLING; }
+      
+      attachInterrupt(triggerInterrupt, triggerHandler, primaryTriggerEdge);
+      break;
+
 
     default:
       triggerHandler = triggerPri_missingTooth;
@@ -3695,6 +3718,32 @@ static inline bool isAnyFuelScheduleRunning(void) {
 #endif
 #if INJ_CHANNELS >= 8
       || fuelSchedule8.Status==RUNNING
+#endif
+      ;
+}
+
+static inline bool isAnyIgnScheduleRunning(void) {
+  return ignitionSchedule1.Status==RUNNING      
+#if IGN_CHANNELS >= 2 
+      || ignitionSchedule2.Status==RUNNING
+#endif      
+#if IGN_CHANNELS >= 3 
+      || ignitionSchedule3.Status==RUNNING
+#endif      
+#if IGN_CHANNELS >= 4       
+      || ignitionSchedule4.Status==RUNNING
+#endif      
+#if IGN_CHANNELS >= 5      
+      || ignitionSchedule5.Status==RUNNING
+#endif
+#if IGN_CHANNELS >= 6
+      || ignitionSchedule6.Status==RUNNING
+#endif
+#if IGN_CHANNELS >= 7
+      || ignitionSchedule7.Status==RUNNING
+#endif
+#if IGN_CHANNELS >= 8
+      || ignitionSchedule8.Status==RUNNING
 #endif
       ;
 }
@@ -3758,7 +3807,7 @@ void changeHalfToFullSync(void)
   interrupts();
 
   //Need to do another check for sparkMode as this function can be called from injection
-  if( (configPage4.sparkMode == IGN_MODE_SEQUENTIAL) && (CRANK_ANGLE_MAX_IGN != 720) )
+  if( (configPage4.sparkMode == IGN_MODE_SEQUENTIAL) && (CRANK_ANGLE_MAX_IGN != 720) && (!isAnyIgnScheduleRunning()) )
   {
     CRANK_ANGLE_MAX_IGN = 720;
     maxIgnOutputs = configPage2.nCylinders;

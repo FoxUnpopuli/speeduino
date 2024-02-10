@@ -126,6 +126,7 @@ void loop(void)
           {
             can_Command();
             readAuxCanBus();
+            if (configPage2.canWBO > 0) { receiveCANwbo(); }
           }
         }   
       #endif
@@ -260,9 +261,11 @@ void loop(void)
       #if TPS_READ_FREQUENCY == 30
         readTPS();
       #endif
-      readO2();
-      readO2_2();
-
+      if (configPage2.canWBO == 0)
+      {
+        readO2();
+        readO2_2();
+      }      
       #ifdef SD_LOGGING
         if(configPage13.onboard_log_file_rate == LOGGER_RATE_30HZ) { writeSDLogEntry(); }
       #endif
@@ -465,16 +468,9 @@ void loop(void)
       #if INJ_CHANNELS >= 8
       uint16_t injector8StartAngle = 0;
       #endif
-
+      
       //Check that the duty cycle of the chosen pulsewidth isn't too high.
-      uint32_t pwLimit = percentage(configPage2.dutyLim, revolutionTime); //The pulsewidth limit is determined to be the duty cycle limit (Eg 85%) by the total time it takes to perform 1 revolution
-      //Handle multiple squirts per rev
-      if (configPage2.strokes == FOUR_STROKE) { pwLimit = pwLimit * 2; }
-      // This requires 32-bit division, which is very slow on Mega 2560.
-      // So only divide if necessary - nSquirts is often only 1.
-      if (currentStatus.nSquirts!=1) {
-        pwLimit = pwLimit / currentStatus.nSquirts;
-      }
+      uint16_t pwLimit = calculatePWLimit();
       //Apply the pwLimit if staging is disabled and engine is not cranking
       if( (!BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK)) && (configPage10.stagingEnabled == false) ) { if (currentStatus.PW1 > pwLimit) { currentStatus.PW1 = pwLimit; } }
 
@@ -483,7 +479,8 @@ void loop(void)
       //***********************************************************************************************
       //BEGIN INJECTION TIMING
       currentStatus.injAngle = table2D_getValue(&injectorAngleTable, currentStatus.RPMdiv100);
-      currentStatus.injAngle = max(currentStatus.injAngle, CRANK_ANGLE_MAX_INJ);
+      if(currentStatus.injAngle > uint16_t(CRANK_ANGLE_MAX_INJ)) { currentStatus.injAngle = uint16_t(CRANK_ANGLE_MAX_INJ); }
+
       unsigned int PWdivTimerPerDegree = timeToAngleDegPerMicroSec(currentStatus.PW1); //How many crank degrees the calculated PW will take at the current speed
 
       injector1StartAngle = calculateInjectorStartAngle(PWdivTimerPerDegree, channel1InjDegrees, currentStatus.injAngle);
@@ -750,8 +747,7 @@ void loop(void)
       //This may potentially be called a number of times as we get closer and closer to the opening time
 
       //Determine the current crank angle
-      int crankAngle = getCrankAngle();
-      while(crankAngle > CRANK_ANGLE_MAX_INJ ) { crankAngle = crankAngle - CRANK_ANGLE_MAX_INJ; } //Continue reducing the crank angle by the max injection amount until it's below the required limit. This will usually only run (at most) once, but in cases where there is sequential ignition and more than 2 squirts per cycle, it may run up to 4 times. 
+      int crankAngle = injectorLimits(getCrankAngle());
 
       // if(Serial && false)
       // {
@@ -1048,8 +1044,7 @@ void loop(void)
       {
         //Refresh the current crank angle info
         //ignition1StartAngle = 335;
-        crankAngle = getCrankAngle(); //Refresh with the latest crank angle
-        while (crankAngle > CRANK_ANGLE_MAX_IGN ) { crankAngle -= CRANK_ANGLE_MAX_IGN; }
+        crankAngle = ignitionLimits(getCrankAngle()); //Refresh the crank angle info
 
 #if IGN_CHANNELS >= 1
         uint32_t timeOut = calculateIgnitionTimeout(ignitionSchedule1, ignition1StartAngle, channel1IgnDegrees, crankAngle);
@@ -1065,8 +1060,7 @@ void loop(void)
         {
           unsigned long uSToEnd = 0;
 
-          crankAngle = getCrankAngle(); //Refresh with the latest crank angle
-          if (crankAngle > CRANK_ANGLE_MAX_IGN ) { crankAngle -= 360; }
+          crankAngle = ignitionLimits(getCrankAngle()); //Refresh the crank angle info
           
           //ONLY ONE OF THE BELOW SHOULD BE USED (PROBABLY THE FIRST):
           //*********
@@ -1214,11 +1208,12 @@ uint16_t PW(int REQ_FUEL, byte VE, long MAP, uint16_t corrections, int injOpen)
   if (corrections > 511 ) { bitShift = 6; }
   if (corrections > 1023) { bitShift = 5; }
   
-  iVE = ((unsigned int)VE << 7) / 100;
-  //iVE = divu100(((unsigned int)VE << 7));
+  //iVE = ((unsigned int)VE << 7) / 100;
+  iVE = div100(((uint16_t)VE << 7));
 
   //Check whether either of the multiply MAP modes is turned on
-  if ( configPage2.multiplyMAP == MULTIPLY_MAP_MODE_100) { iMAP = ((unsigned int)MAP << 7) / 100; }
+  //if ( configPage2.multiplyMAP == MULTIPLY_MAP_MODE_100) { iMAP = ((unsigned int)MAP << 7) / 100; }
+  if ( configPage2.multiplyMAP == MULTIPLY_MAP_MODE_100) { iMAP = div100( ((uint16_t)MAP << 7U) ); }
   else if( configPage2.multiplyMAP == MULTIPLY_MAP_MODE_BARO) { iMAP = ((unsigned int)MAP << 7) / currentStatus.baro; }
   
   if ( (configPage2.includeAFR == true) && (configPage6.egoType == EGO_TYPE_WIDE) && (currentStatus.runSecs > configPage6.ego_sdelay) ) {
@@ -1227,8 +1222,8 @@ uint16_t PW(int REQ_FUEL, byte VE, long MAP, uint16_t corrections, int injOpen)
   if ( (configPage2.incorporateAFR == true) && (configPage2.includeAFR == false) ) {
     iAFR = ((unsigned int)configPage2.stoich << 7) / currentStatus.afrTarget;  //Incorporate stoich vs target AFR, if enabled.
   }
-  iCorrections = (corrections << bitShift) / 100;
-  //iCorrections = divu100((corrections << bitShift));
+  //iCorrections = (corrections << bitShift) / 100;
+  iCorrections = div100((corrections << bitShift));
 
 
   uint32_t intermediate = ((uint32_t)REQ_FUEL * (uint32_t)iVE) >> 7; //Need to use an intermediate value to avoid overflowing the long
@@ -1257,9 +1252,9 @@ uint16_t PW(int REQ_FUEL, byte VE, long MAP, uint16_t corrections, int injOpen)
         }
     }
 
-    if ( intermediate > 65535)
+    if ( intermediate > UINT16_MAX)
     {
-      intermediate = 65535;  //Make sure this won't overflow when we convert to uInt. This means the maximum pulsewidth possible is 65.535mS
+      intermediate = UINT16_MAX;  //Make sure this won't overflow when we convert to uInt. This means the maximum pulsewidth possible is 65.535mS
     }
   }
   return (unsigned int)(intermediate);
@@ -1437,6 +1432,36 @@ void calculateIgnitionAngles(int dwellAngle)
     default:
       break;
   }
+}
+
+uint16_t calculatePWLimit()
+{
+  uint32_t tempLimit = percentage(configPage2.dutyLim, revolutionTime); //The pulsewidth limit is determined to be the duty cycle limit (Eg 85%) by the total time it takes to perform 1 revolution
+  //Handle multiple squirts per rev
+  if (configPage2.strokes == FOUR_STROKE) { tempLimit = tempLimit * 2; }
+  //Optimise for power of two divisions where possible
+  switch(currentStatus.nSquirts)
+  {
+    case 1:
+      //No action needed
+      break;
+    case 2:
+      tempLimit = tempLimit / 2;
+      break;
+    case 4:
+      tempLimit = tempLimit / 4;
+      break;
+    case 8:
+      tempLimit = tempLimit / 8;
+      break;
+    default:
+      //Non-PoT squirts value. Perform (slow) uint32_t division
+      tempLimit = tempLimit / currentStatus.nSquirts;
+      break;
+  }
+  if(tempLimit > UINT16_MAX) { tempLimit = UINT16_MAX; }
+
+  return tempLimit;
 }
 
 void calculateStaging(uint32_t pwLimit)
